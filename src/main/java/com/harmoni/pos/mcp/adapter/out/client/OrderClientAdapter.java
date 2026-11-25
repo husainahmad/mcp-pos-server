@@ -70,6 +70,27 @@ public class OrderClientAdapter implements OrderPort {
         return JsonData.unwrap(http.get(orderRestClient, "/api/v1/reports/" + type.path(), caller, query));
     }
 
+    @Override
+    public JsonNode getCustomerOrders(CallerContext caller, long customerId,
+                                      LocalDateTime from, LocalDateTime to) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("from", from.toString());
+        query.put("to", to.toString());
+        return JsonData.unwrap(http.get(orderRestClient,
+                "/api/v1/order-customers/customer/" + customerId + "/history", caller, query));
+    }
+
+    @Override
+    public JsonNode getOrder(CallerContext caller, long orderId) {
+        return JsonData.unwrap(http.get(orderRestClient, "/api/v1/order/" + orderId, caller, Map.of()));
+    }
+
+    @Override
+    public JsonNode voidOrder(CallerContext caller, long orderId) {
+        return JsonData.unwrap(http.put(orderRestClient, "/api/v1/order/" + orderId + "/void",
+                caller, Map.of()));
+    }
+
     private Map<String, Object> orderBody(CreateOrderCommand command) {
         Map<String, Object> body = new LinkedHashMap<>();
         if (command.customerId() != null && command.customerId() > 0) {

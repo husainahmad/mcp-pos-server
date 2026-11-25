@@ -24,7 +24,7 @@ harmoni.mcp.read-timeout=30s
 harmoni.mcp.allow-default-caller=${MCP_ALLOW_DEFAULT_CALLER:false}
 harmoni.mcp.default-username=${MCP_DEFAULT_USERNAME:Kasir1}
 harmoni.mcp.default-roles=${MCP_DEFAULT_ROLES:}
-harmoni.mcp.default-permissions=${MCP_DEFAULT_PERMISSIONS:order:view,report:view,menu:view,customer:read}
+harmoni.mcp.default-permissions=${MCP_DEFAULT_PERMISSIONS:order:view,order:approve,report:view,menu:view,customer:read,customer:write,organization:read,table:view,growth:write,campaign:write}
 harmoni.mcp.default-scopes=${MCP_DEFAULT_SCOPES:}
 
 logging.level.com.harmoni.pos.mcp=INFO

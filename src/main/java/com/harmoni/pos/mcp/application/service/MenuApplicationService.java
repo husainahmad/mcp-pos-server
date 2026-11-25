@@ -41,6 +41,59 @@ public class MenuApplicationService implements MenuUseCase {
                 Math.max(page, 1), boundedSize(size));
     }
 
+    @Override
+    public JsonNode listProductsByCategory(long categoryId, Integer limit, Integer beforeId) {
+        CallerContext caller = CallerContextHolder.current();
+        if (categoryId != -1L) {
+            ArgumentChecks.positive(categoryId, "categoryId");
+        }
+        JsonNode result = menuPort.listProductsByCategory(caller, categoryId,
+                ResultCaps.boundedLimit(limit), optionalPositive(beforeId, "beforeId"));
+        return ResultCaps.capArray(result);
+    }
+
+    @Override
+    public JsonNode listProductsByBrandTier(int brandId, int tierId, String search,
+                                            Integer limit, Integer beforeId) {
+        CallerContext caller = CallerContextHolder.current();
+        JsonNode result = menuPort.listProductsByBrandTier(caller,
+                ArgumentChecks.positive(brandId, "brandId"),
+                ArgumentChecks.positive(tierId, "tierId"),
+                blankToNull(search),
+                ResultCaps.boundedLimit(limit),
+                optionalPositive(beforeId, "beforeId"));
+        return ResultCaps.capArray(result);
+    }
+
+    @Override
+    public JsonNode getProductCustomizations(long productId) {
+        CallerContext caller = CallerContextHolder.current();
+        JsonNode result = menuPort.getProductCustomizations(caller,
+                ArgumentChecks.positive(productId, "productId"));
+        return ResultCaps.capEntities(result);
+    }
+
+    @Override
+    public JsonNode listCustomizations(int page, int size) {
+        CallerContext caller = CallerContextHolder.current();
+        JsonNode result = menuPort.listCustomizations(caller, Math.max(page, 1),
+                ResultCaps.boundedLimit(size, ResultCaps.DEFAULT_LIMIT, ResultCaps.MAX_LIMIT));
+        return ResultCaps.capArray(result);
+    }
+
+    @Override
+    public JsonNode findProductsByCustomization(int customizationId, Integer limit) {
+        CallerContext caller = CallerContextHolder.current();
+        JsonNode result = menuPort.findProductsByCustomization(caller,
+                ArgumentChecks.positive(customizationId, "customizationId"),
+                ResultCaps.boundedLimit(limit));
+        return ResultCaps.capArray(result);
+    }
+
+    private Integer optionalPositive(Integer value, String field) {
+        return value == null ? null : ArgumentChecks.positive(value, field);
+    }
+
     private int boundedSize(int size) {
         if (size < 1) {
             return 20;

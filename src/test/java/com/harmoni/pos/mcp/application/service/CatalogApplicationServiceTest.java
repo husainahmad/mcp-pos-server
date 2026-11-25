@@ -97,4 +97,5 @@ class CatalogApplicationServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("storeId");
     }
+
 }

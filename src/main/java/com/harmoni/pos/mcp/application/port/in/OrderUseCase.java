@@ -17,4 +17,18 @@ public interface OrderUseCase {
     JsonNode payOrder(PayOrderCommand command);
 
     JsonNode report(String reportType, String start, String end, List<Integer> storeIds, Integer limit);
+
+    JsonNode getCustomerOrders(long customerId, String from, String to);
+
+    JsonNode bestSellers(String start, String end, List<Integer> storeIds, Integer limit);
+
+    JsonNode salesTotals(String start, String end, List<Integer> storeIds);
+
+    JsonNode dailySales(String start, String end, List<Integer> storeIds);
+
+    JsonNode settlement(String start, String end, List<Integer> storeIds);
+
+    JsonNode getOrder(long orderId);
+
+    JsonNode voidOrder(long orderId, Boolean confirmed);
 }

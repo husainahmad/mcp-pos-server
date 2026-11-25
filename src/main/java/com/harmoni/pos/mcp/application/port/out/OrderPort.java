@@ -21,4 +21,10 @@ public interface OrderPort {
 
     JsonNode report(CallerContext caller, ReportType type, LocalDateTime start, LocalDateTime end,
                     List<Integer> storeIds, int limit);
+
+    JsonNode getCustomerOrders(CallerContext caller, long customerId, LocalDateTime from, LocalDateTime to);
+
+    JsonNode getOrder(CallerContext caller, long orderId);
+
+    JsonNode voidOrder(CallerContext caller, long orderId);
 }

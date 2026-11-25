@@ -69,6 +69,76 @@ public class OrderApplicationService implements OrderUseCase {
         return orderPort.report(caller, type, startTime, endTime, storeIds, boundedLimit(limit));
     }
 
+    @Override
+    public JsonNode getCustomerOrders(long customerId, String from, String to) {
+        CallerContext caller = CallerContextHolder.current();
+        LocalDateTime startTime = parseStart(from);
+        LocalDateTime endTime = parseEnd(to);
+        validateRange(startTime, endTime);
+        JsonNode result = orderPort.getCustomerOrders(caller,
+                ArgumentChecks.positive(customerId, "customerId"), startTime, endTime);
+        return ResultCaps.capArray(result);
+    }
+
+    @Override
+    public JsonNode bestSellers(String start, String end, List<Integer> storeIds, Integer limit) {
+        return cappedReport(ReportType.TOP_PRODUCTS, start, end, storeIds, limit);
+    }
+
+    @Override
+    public JsonNode salesTotals(String start, String end, List<Integer> storeIds) {
+        return cappedReport(ReportType.SALES, start, end, storeIds, null);
+    }
+
+    @Override
+    public JsonNode dailySales(String start, String end, List<Integer> storeIds) {
+        return cappedReport(ReportType.DAILY, start, end, storeIds, null);
+    }
+
+    @Override
+    public JsonNode settlement(String start, String end, List<Integer> storeIds) {
+        return cappedReport(ReportType.SETTLEMENT, start, end, storeIds, null);
+    }
+
+    @Override
+    public JsonNode getOrder(long orderId) {
+        CallerContext caller = CallerContextHolder.current();
+        JsonNode result = orderPort.getOrder(caller, ArgumentChecks.positive(orderId, "orderId"));
+        return ResultCaps.capEntities(result);
+    }
+
+    @Override
+    public JsonNode voidOrder(long orderId, Boolean confirmed) {
+        CallerContext caller = CallerContextHolder.current();
+        requireConfirmed(confirmed);
+        long id = ArgumentChecks.positive(orderId, "orderId");
+        orderPort.getOrder(caller, id);
+        return ResultCaps.capEntities(orderPort.voidOrder(caller, id));
+    }
+
+    private JsonNode cappedReport(ReportType type, String start, String end,
+                                  List<Integer> storeIds, Integer limit) {
+        CallerContext caller = CallerContextHolder.current();
+        LocalDateTime startTime = parseStart(start);
+        LocalDateTime endTime = parseEnd(end);
+        validateRange(startTime, endTime);
+        JsonNode result = orderPort.report(caller, type, startTime, endTime,
+                ResultCaps.capStoreIds(storeIds), ResultCaps.boundedLimit(limit));
+        return ResultCaps.capArray(result);
+    }
+
+    private void requireConfirmed(Boolean confirmed) {
+        if (!Boolean.TRUE.equals(confirmed)) {
+            throw new IllegalArgumentException("confirmed=true is required");
+        }
+    }
+
+    private void validateRange(LocalDateTime start, LocalDateTime end) {
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("start must be before end");
+        }
+    }
+
     private int boundedLimit(Integer limit) {
         if (limit == null || limit < 1) {
             return DEFAULT_LIMIT;

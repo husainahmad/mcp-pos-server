@@ -84,6 +84,35 @@ public class PromotionMcpTools {
                 new PromotionPriceCommand(lines, context)));
     }
 
+    @McpTool(name = "pos_get_promotion", description = """
+            Get one promotion by id or code. Provide exactly one of id or code.
+            Result scope: inspect at most 5 entities, including schedules, targets, rules and scopes.
+            """)
+    public String getPromotion(
+            @McpToolParam(description = "Promotion id from pos_list_promotions.") Long id,
+            @McpToolParam(description = "Promotion code when id is not known. URL-encoded by the server.") String code) {
+        return ToolExecutor.call(() -> promotions.getPromotion(id, code));
+    }
+
+    @McpTool(name = "pos_list_redeemable_promotions", description = """
+            List promotions that can be redeemed. Returns at most 30 results and
+            inspects at most 5 child entities per promotion.
+            """)
+    public String listRedeemablePromotions() {
+        return ToolExecutor.call(promotions::listRedeemablePromotions);
+    }
+
+    @McpTool(name = "pos_find_promotions_for_catalog_item", description = """
+            Find promotions applicable to one product, SKU and category combination.
+            Returns at most 30 results.
+            """)
+    public String findPromotionsForCatalogItem(
+            @McpToolParam(description = "Product id from pos_search_products.") int productId,
+            @McpToolParam(description = "SKU id from pos_get_product_skus.") int skuId,
+            @McpToolParam(description = "Category id from pos_search_categories.") int categoryId) {
+        return ToolExecutor.call(() -> promotions.findPromotionsForCatalogItem(productId, skuId, categoryId));
+    }
+
     private PromotionCommands.PromotionCommand promotion(
             Long id, Integer brandId, String code, String name, String description, String promotionType,
             String status, Integer priority, String startDate, String endDate,

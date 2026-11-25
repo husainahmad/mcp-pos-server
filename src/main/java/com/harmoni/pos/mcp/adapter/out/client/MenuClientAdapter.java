@@ -51,6 +51,52 @@ public class MenuClientAdapter implements MenuPort {
         return JsonData.unwrap(http.get(menuRestClient, "/api/v1/promotion", caller, query));
     }
 
+    @Override
+    public JsonNode listProductsByCategory(CallerContext caller, long categoryId, int limit, Integer beforeId) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("limit", limit);
+        if (beforeId != null) {
+            query.put("beforeId", beforeId);
+        }
+        return JsonData.unwrap(http.get(menuRestClient,
+                "/api/v1/product/category/" + categoryId + "/price/page", caller, query));
+    }
+
+    @Override
+    public JsonNode listProductsByBrandTier(CallerContext caller, int brandId, int tierId, String search,
+                                            int limit, Integer beforeId) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        if (search != null) {
+            query.put("search", search);
+        }
+        query.put("limit", limit);
+        if (beforeId != null) {
+            query.put("beforeId", beforeId);
+        }
+        return JsonData.unwrap(http.get(menuRestClient,
+                "/api/v1/product/brand/" + brandId + "/tier/" + tierId + "/cursor", caller, query));
+    }
+
+    @Override
+    public JsonNode getProductCustomizations(CallerContext caller, long productId) {
+        return JsonData.unwrap(http.get(menuRestClient,
+                "/api/v1/product/" + productId + "/customization", caller, Map.of()));
+    }
+
+    @Override
+    public JsonNode listCustomizations(CallerContext caller, int page, int size) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("page", page);
+        query.put("size", size);
+        return JsonData.unwrap(http.get(menuRestClient, "/api/v1/customization", caller, query));
+    }
+
+    @Override
+    public JsonNode findProductsByCustomization(CallerContext caller, int customizationId, int limit) {
+        return JsonData.unwrap(http.get(menuRestClient,
+                "/api/v1/product/by-customization/" + customizationId, caller, Map.of("limit", limit)));
+    }
+
     private void putIfPresent(Map<String, Object> query, String key, String value) {
         if (value != null && !value.isBlank()) {
             query.put(key, value);

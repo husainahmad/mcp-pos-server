@@ -69,14 +69,55 @@ Spring AI's annotation scanner registers them automatically.
 | `pos_get_customer` | Customer details |
 | `pos_get_customer_metrics` | Customer spend, visits, average order value, segment |
 | `pos_get_customer_loyalty` | Loyalty account and points |
+| `pos_list_products_by_category` | Priced products in a category, or all categories with `-1` |
+| `pos_list_products_by_brand_tier` | Products in a brand and tier with cursor pagination |
+| `pos_get_product_customizations` | Customization groups linked to a product |
+| `pos_list_customizations` | Customization groups with required page and size |
+| `pos_get_promotion` | Promotion by id or code |
+| `pos_list_redeemable_promotions` | Redeemable promotions |
+| `pos_get_customer_orders` | Customer order history in a date range |
+| `pos_get_best_sellers` | Top-selling products report |
+| `pos_get_sales_totals` | Sales totals report |
+| `pos_get_daily_sales` | Daily sales report |
+| `pos_get_settlement` | Settlement report |
+| `pos_get_customer_loyalty_history` | Loyalty point history |
+| `pos_get_customer_vouchers` | Customer vouchers |
+| `pos_get_customer_insights` | Customer insights |
+| `pos_get_sales_summary` | Sales analytics summary |
+| `pos_get_organization_tree` | Organization tree |
+| `pos_list_stores` | Stores in a chain |
+| `pos_list_tables` | Tables in a store |
+| `pos_list_tiers_by_type` | Tiers of type `PRICE`, `MENU` or `SERVICE` |
+| `pos_find_products_by_customization` | Products using one customization |
+| `pos_find_promotions_for_catalog_item` | Promotions for a product/SKU/category item |
+| `pos_get_order` | Full order details |
+| `pos_void_order` | Void an order after a preview and explicit confirmation |
+| `pos_create_customer` | Create a customer after explicit confirmation |
+| `pos_update_customer` | Update a customer after explicit confirmation |
+| `pos_redeem_voucher` | Redeem a voucher after a preview and explicit confirmation |
+| `pos_redeem_loyalty_points` | Redeem loyalty points after a preview and explicit confirmation |
+| `pos_get_retention_overview` | Retention KPIs for a brand or store, including revenue at risk |
+| `pos_list_retention_segments` | Retention segment distribution |
+| `pos_list_retention_cohorts` | Monthly cohorts with 30-day repeat retention |
+| `pos_list_at_risk_customers` | At-risk customers (no personal data) |
+| `pos_list_lapsed_customers` | Lapsed customers (no personal data) |
+| `pos_list_campaigns` | Campaigns for a brand |
+| `pos_get_campaign_performance` | Issued, redeemed, revenue and reactivations for a campaign |
+| `pos_preview_campaign_audience` | Preview a retention audience, size, expected redemptions and discount exposure |
+| `pos_create_retention_campaign` | Create a brand-scoped retention campaign after confirmation |
+| `pos_issue_vouchers_bulk` | Issue vouchers for an approved audience after explicit confirmation |
+
+Read tools cap broad result lists at 30 entries and nested entity lists at 5.
+Write tools reject `confirmed != true` before calling a downstream service.
 
 Ordering uses the existing `POST /api/v1/order` path. There is no quote endpoint
 or order-session endpoint: `pos_calculate_order` calculates without persisting,
 and `pos_create_confirmed_order` creates the order with status `CONFIRMED`.
 Payment is a separate `pos_pay_order` call.
 
-Inventory, incremental cart/session mutations, persistent promotion application
-and close-day settlement have no downstream endpoints and are not exposed.
+Incremental cart/session mutations and persistent promotion application have no
+downstream endpoints and are not exposed. Close-day settlement is available as a
+read-only report through `pos_get_settlement`.
 
 ## Configuration
 

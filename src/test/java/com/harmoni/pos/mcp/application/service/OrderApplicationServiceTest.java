@@ -1,5 +1,6 @@
 package com.harmoni.pos.mcp.application.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harmoni.pos.mcp.application.port.out.OrderPort;
 import com.harmoni.pos.mcp.application.security.CallerContextHolder;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,10 +22,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -100,8 +105,98 @@ class OrderApplicationServiceTest {
         assertThat(end.getValue()).isEqualTo(LocalDateTime.of(2026, 11, 22, 23, 59, 59));
     }
 
+    @Test
+    void getCustomerOrdersRequiresPositiveIdAndValidDateBounds() {
+        assertThatThrownBy(() -> service.getCustomerOrders(0L, "2026-11-22", "2026-11-23"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("customerId");
+        assertThatThrownBy(() -> service.getCustomerOrders(1L, "2026-11-23", "2026-11-22"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("start");
+        verifyNoInteractions(orderPort);
+    }
+
+    @Test
+    void getCustomerOrdersCapsResults() throws Exception {
+        when(orderPort.getCustomerOrders(any(), eq(5L), any(), any()))
+                .thenReturn(MAPPER.readTree(ids(35)));
+
+        JsonNode result = service.getCustomerOrders(5L, "2026-11-22", "2026-11-23");
+
+        assertThat(result).hasSize(30);
+        verify(orderPort).getCustomerOrders(any(), eq(5L), any(), any());
+    }
+
+    @Test
+    void bestSellersCapsLimitStoreIdsAndResults() throws Exception {
+        when(orderPort.report(any(), eq(ReportType.TOP_PRODUCTS), any(), any(),
+                eq(List.of(1, 2, 3, 4, 5)), eq(30))).thenReturn(MAPPER.readTree(ids(35)));
+
+        JsonNode result = service.bestSellers("2026-11-22", "2026-11-23",
+                List.of(1, 2, 3, 4, 5, 6), 999);
+
+        assertThat(result).hasSize(30);
+        verify(orderPort).report(any(), eq(ReportType.TOP_PRODUCTS), any(), any(),
+                eq(List.of(1, 2, 3, 4, 5)), eq(30));
+    }
+
+    @Test
+    void salesTotalsCapsStoreIdsAndResults() throws Exception {
+        when(orderPort.report(any(), eq(ReportType.SALES), any(), any(),
+                eq(List.of(2)), eq(20))).thenReturn(MAPPER.readTree(ids(35)));
+
+        JsonNode result = service.salesTotals("2026-11-22", "2026-11-23", List.of(2, 2));
+
+        assertThat(result).hasSize(30);
+        verify(orderPort).report(any(), eq(ReportType.SALES), any(), any(),
+                eq(List.of(2)), eq(20));
+    }
+
+    @Test
+    void getOrderCapsEntities() throws Exception {
+        when(orderPort.getOrder(any(), eq(7L)))
+                .thenReturn(MAPPER.readTree("{\"orderDetails\":" + ids(9) + "}"));
+
+        JsonNode result = service.getOrder(7L);
+
+        assertThat(result.get("orderDetails")).hasSize(5);
+        verify(orderPort).getOrder(any(), eq(7L));
+    }
+
+    @Test
+    void voidOrderRejectsUnconfirmedBeforePreview() {
+        assertThatThrownBy(() -> service.voidOrder(9L, Boolean.FALSE))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("confirmed");
+
+        verifyNoInteractions(orderPort);
+    }
+
+    @Test
+    void voidOrderPreviewsBeforeWrite() {
+        when(orderPort.getOrder(any(), eq(9L))).thenReturn(MAPPER.createObjectNode());
+        when(orderPort.voidOrder(any(), eq(9L))).thenReturn(MAPPER.createObjectNode());
+
+        service.voidOrder(9L, Boolean.TRUE);
+
+        InOrder order = inOrder(orderPort);
+        order.verify(orderPort).getOrder(any(), eq(9L));
+        order.verify(orderPort).voidOrder(any(), eq(9L));
+    }
+
     private CreateOrderCommand command() {
         return new CreateOrderCommand(1, null, 1, null,
                 List.of(new CreateOrderCommand.OrderLineCommand(10, 20, 1, List.of())));
+    }
+
+    private String ids(int size) {
+        StringBuilder builder = new StringBuilder("[");
+        for (int index = 0; index < size; index++) {
+            if (index > 0) {
+                builder.append(',');
+            }
+            builder.append("{\"id\":").append(index).append("}");
+        }
+        return builder.append(']').toString();
     }
 }

@@ -9,7 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 @Component
@@ -40,5 +43,28 @@ public class PromotionClientAdapter implements PromotionPort {
     @Override
     public JsonNode calculatePromotionPrice(CallerContext caller, PromotionPriceCommand command) {
         return JsonData.unwrap(http.post(menuRestClient, "/api/v1/promotion/price", caller, command));
+    }
+
+    @Override
+    public JsonNode getPromotion(CallerContext caller, Long id, String code) {
+        if (id != null) {
+            return JsonData.unwrap(http.get(menuRestClient, "/api/v1/promotion/" + id, caller, Map.of()));
+        }
+        String encoded = UriUtils.encodePathSegment(code, StandardCharsets.UTF_8);
+        return JsonData.unwrap(http.get(menuRestClient, "/api/v1/promotion/code/" + encoded, caller, Map.of()));
+    }
+
+    @Override
+    public JsonNode listRedeemablePromotions(CallerContext caller) {
+        return JsonData.unwrap(http.get(menuRestClient, "/api/v1/promotion/redeemable", caller, Map.of()));
+    }
+
+    @Override
+    public JsonNode findPromotionsForCatalogItem(CallerContext caller, int productId, int skuId, int categoryId) {
+        Map<String, Object> query = new LinkedHashMap<>();
+        query.put("productId", productId);
+        query.put("skuId", skuId);
+        query.put("categoryId", categoryId);
+        return JsonData.unwrap(http.get(menuRestClient, "/api/v1/promotion/for-catalog-item", caller, query));
     }
 }

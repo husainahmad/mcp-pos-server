@@ -13,4 +13,10 @@ public interface PromotionUseCase {
     JsonNode setPromotionStatus(long promotionId, String status);
 
     JsonNode calculatePromotionPrice(PromotionPriceCommand command);
+
+    JsonNode getPromotion(Long id, String code);
+
+    JsonNode listRedeemablePromotions();
+
+    JsonNode findPromotionsForCatalogItem(int productId, int skuId, int categoryId);
 }

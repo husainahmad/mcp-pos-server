@@ -91,6 +91,76 @@ public class OrderMcpTools {
         return ToolExecutor.call(() -> orders.report(reportType, start, end, storeIds, limit));
     }
 
+    @McpTool(name = "pos_get_customer_orders", description = """
+            List one customer's order history in a date-time range.
+            Returns at most 30 results and inspects at most 5 order lines per order.
+            """)
+    public String getCustomerOrders(
+            @McpToolParam(description = "Customer id from pos_search_customers.") long customerId,
+            @McpToolParam(description = "Start date or ISO date-time.") String from,
+            @McpToolParam(description = "End date or ISO date-time.") String to) {
+        return ToolExecutor.call(() -> orders.getCustomerOrders(customerId, from, to));
+    }
+
+    @McpTool(name = "pos_get_best_sellers", description = """
+            Get the top-selling products report. Returns at most 30 results.
+            """)
+    public String getBestSellers(
+            @McpToolParam(description = "Start date or ISO date-time.") String start,
+            @McpToolParam(description = "End date or ISO date-time.") String end,
+            @McpToolParam(description = "Optional store ids, at most 5 are inspected.") List<Integer> storeIds,
+            @McpToolParam(description = "Maximum products, capped at 30. Defaults to 20.") Integer limit) {
+        return ToolExecutor.call(() -> orders.bestSellers(start, end, storeIds, limit));
+    }
+
+    @McpTool(name = "pos_get_sales_totals", description = """
+            Get sales totals for a date-time range. Returns at most 30 results.
+            """)
+    public String getSalesTotals(
+            @McpToolParam(description = "Start date or ISO date-time.") String start,
+            @McpToolParam(description = "End date or ISO date-time.") String end,
+            @McpToolParam(description = "Optional store ids, at most 5 are inspected.") List<Integer> storeIds) {
+        return ToolExecutor.call(() -> orders.salesTotals(start, end, storeIds));
+    }
+
+    @McpTool(name = "pos_get_daily_sales", description = """
+            Get daily sales for a date-time range. Returns at most 30 results.
+            """)
+    public String getDailySales(
+            @McpToolParam(description = "Start date or ISO date-time.") String start,
+            @McpToolParam(description = "End date or ISO date-time.") String end,
+            @McpToolParam(description = "Optional store ids, at most 5 are inspected.") List<Integer> storeIds) {
+        return ToolExecutor.call(() -> orders.dailySales(start, end, storeIds));
+    }
+
+    @McpTool(name = "pos_get_settlement", description = """
+            Get the settlement report for a date-time range. Returns at most 30 results.
+            """)
+    public String getSettlement(
+            @McpToolParam(description = "Start date or ISO date-time.") String start,
+            @McpToolParam(description = "End date or ISO date-time.") String end,
+            @McpToolParam(description = "Optional store ids, at most 5 are inspected.") List<Integer> storeIds) {
+        return ToolExecutor.call(() -> orders.settlement(start, end, storeIds));
+    }
+
+    @McpTool(name = "pos_get_order", description = """
+            Get one full order. Result scope: inspect at most 5 entities, including order details and payments.
+            """)
+    public String getOrder(
+            @McpToolParam(description = "Order id from pos_list_orders.") long orderId) {
+        return ToolExecutor.call(() -> orders.getOrder(orderId));
+    }
+
+    @McpTool(name = "pos_void_order", description = """
+            Void an order. The order is read first as a preview.
+            Rejected unless confirmed is true. Result scope: inspect at most 5 entities in the result.
+            """)
+    public String voidOrder(
+            @McpToolParam(description = "Order id from pos_get_order.") long orderId,
+            @McpToolParam(description = "Must be true only after the customer explicitly confirmed the void.") Boolean confirmed) {
+        return ToolExecutor.call(() -> orders.voidOrder(orderId, confirmed));
+    }
+
     private CreateOrderCommand order(Integer customerId, String tableNumber, Integer storeServiceTypesId,
                                      String remark, List<CreateOrderCommand.OrderLineCommand> orderDetails) {
         return new CreateOrderCommand(customerId, tableNumber, storeServiceTypesId, remark, orderDetails);

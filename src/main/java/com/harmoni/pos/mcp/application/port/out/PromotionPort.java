@@ -14,4 +14,10 @@ public interface PromotionPort {
     JsonNode setPromotionStatus(CallerContext caller, long promotionId, String status);
 
     JsonNode calculatePromotionPrice(CallerContext caller, PromotionPriceCommand command);
+
+    JsonNode getPromotion(CallerContext caller, Long id, String code);
+
+    JsonNode listRedeemablePromotions(CallerContext caller);
+
+    JsonNode findPromotionsForCatalogItem(CallerContext caller, int productId, int skuId, int categoryId);
 }
