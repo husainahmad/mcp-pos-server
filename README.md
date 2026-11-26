@@ -1,5 +1,7 @@
 # Harmoni POS MCP Server
 
+[![M8ven Score](https://m8ven.ai/badge/mcp/husainahmad-mcp-pos-server-ey9jqs?v=ba2d954bae85b5673890b42b59a4b30a)](https://m8ven.ai/mcp/husainahmad-mcp-pos-server-ey9jqs?s=readme)
+
 MCP tool gateway for the Harmoni POS. It exposes catalog, order, promotion and
 customer operations to MCP clients.
 
